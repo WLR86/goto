@@ -10,7 +10,7 @@ class BSC5P:
         pass
 
     def getStarFromBayer(self, bayer):
-
+        """Return the star from the Bayer designation"""
         data = json.load(open(self.datasource))
         for star in data:
             for value in star['namesAlt']:
@@ -21,6 +21,7 @@ class BSC5P:
         return star
 
     def getHipFromBayer(self, bayer):
+        """Return the HIP ID from the Bayer designation"""
         data = json.load(open(self.datasource))
         hipID = 0
         for star in data:

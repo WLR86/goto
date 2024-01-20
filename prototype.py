@@ -5,9 +5,9 @@ from getPosFromBSC5P import BSC5P
 from getPosFromMessier import Messier
 
 
-
 # define a function that allows to get coordinates of any object
 def getPos(obj):
+    """ Get the position of an object at the given time"""
     astrometric = obs_location.at(t).observe(obj)
     appa = astrometric.apparent()
     ra, dec, distance = appa.radec()
