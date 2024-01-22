@@ -11,13 +11,25 @@ def getPos(obj):
     astrometric = obs_location.at(t).observe(obj)
     appa = astrometric.apparent()
     ra, dec, distance = appa.radec()
+    # get ra and dec in degrees
+    ra = ra._degrees
+    dec = dec._degrees
     return ra, dec
 
+def hms2deg(hms):
+    """ Convert HMS to degrees"""
+    h, m, s = hms.split(':')
+    return 15*(float(h) + float(m)/60 + float(s)/3600)
+
+def dms2deg(dms):
+    """ Convert DMS to degrees"""
+    d, m, s = dms.split(':')
+    return float(d) + float(m)/60 + float(s)/3600
 
 try:
     obj = sys.argv[1]
 except IndexError:
-    print('Defaulting to Polaris...')
+    print('No object given. Defaulting to Polaris (* alf UMi)...')
     obj = "* alf UMi"
 
 load = Loader('~/skyfield-data')
@@ -32,19 +44,26 @@ obs_location = earth + Topos(
         elevation_m=pos['elevation_m']
     )
 
-planets = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'moon', 'sun']
+planets = [
+        'MERCURY', 'VENUS', 'EARTH', 'MARS', 'JUPITER',
+        'SATURN', 'URANUS', 'NEPTUNE', 'MOON', 'SUN'
+    ]
 
-if obj.lower() in planets:
-    objectType = 'planet'
+if obj.upper() in planets:
+    objectType = 'Planet'
 elif obj.startswith('*'):
-    objectType = 'star'
+    objectType = 'Star'
 elif obj.startswith('M') and int(obj[1:]) in range(1, 111):
-    objectType = 'messier'
+    objectType = 'Messier'
+elif obj.startswith('NGC') and int(obj[3:]) in range(1, 7840):
+    objectType = 'NGC'
+elif obj.startswith('IC') and int(obj[2:]) in range(1, 5386):
+    objectType = 'IC'
 else:
     objectType = 'unknown'
 
 match objectType:
-    case 'planet':
+    case 'Planet':
         print('Planet')
         if (obj.lower() == 'moon') or (obj.lower() == 'sun'):
             target = planetsDB[obj]
@@ -54,8 +73,9 @@ match objectType:
         ts = load.timescale()
         t = ts.now()
         ra, dec = getPos(target)
-        print(ra, dec)
-    case 'star':
+        print(ra)
+        print(dec)
+    case 'Star':
         print('Star')
         hipID = 0
         with load.open(hipparcos.URL) as f:
@@ -66,12 +86,27 @@ match objectType:
         ts = load.timescale()
         t = ts.now()
         ra, dec = getPos(target)
-        print(ra, dec)
+        print(ra)
+        print(dec)
 
-    case 'messier':
-        print('Messier object')
-        target = Messier().getFromRef(obj)
-        print(target)
+    case 'Messier':
+        print('Messier object ' + obj)
+        target = Messier().getFromRef(obj, 'm')
+        print(hms2deg(target["ra"]))
+        print(dms2deg(target["dec"]))
+
+    case 'NGC':
+        print('NGC object ' + obj)
+        target = Messier().getFromRef(obj, 'ngc')
+        print(hms2deg(target["ra"]))
+        print(dms2deg(target["dec"]))
+
+    case 'IC':
+        print('IC object ' + obj)
+        target = Messier().getFromRef(obj, 'ic')
+        print(hms2deg(target["ra"]))
+        print(dms2deg(target["dec"]))
+
     case _:
         print('Unknown object type')
 

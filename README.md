@@ -52,3 +52,6 @@ https://lguerriero.opendatasoft.com/
 
 Messier catalog
 https://lguerriero.opendatasoft.com/api/explore/v2.1/catalog/datasets/catalogue-de-messier/records?select=messier%2Cngc%2Cra%2Cdec&limit=110
+
+# the API limits number of records so it's easier to get the whole thing instead
+https://lguerriero.opendatasoft.com/api/explore/v2.1/catalog/datasets/ngc-ic-messier-catalog/exports/json?lang=en&timezone=Europe%2FBerlin

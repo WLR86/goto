@@ -27,7 +27,8 @@ class BSC5P:
         for star in data:
             for value in star['namesAlt']:
                 if value == bayer:
-                    # we found the star
+                    # we found the star but we need to get the
+                    # HIP ID among the other names
                     for name in star['namesAlt']:
                         if name.startswith('HIP'):
                             hipID = name.split(' ')[1]
