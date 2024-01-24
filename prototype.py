@@ -16,15 +16,24 @@ def getPos(obj):
     dec = dec._degrees
     return ra, dec
 
+
 def hms2deg(hms):
     """ Convert HMS to degrees"""
     h, m, s = hms.split(':')
-    return 15*(float(h) + float(m)/60 + float(s)/3600)
+    return 15*(int(h) + int(m)/60 + float(s)/3600)
+
 
 def dms2deg(dms):
     """ Convert DMS to degrees"""
     d, m, s = dms.split(':')
     return float(d) + float(m)/60 + float(s)/3600
+
+
+def printCoordinates(coord):
+    """ Print coordinates in decimal degrees"""
+    print(hms2deg(coord['RA']))
+    print(dms2deg(coord['Dec']))
+
 
 try:
     obj = sys.argv[1]
@@ -46,7 +55,8 @@ obs_location = earth + Topos(
 
 planets = [
         'MERCURY', 'VENUS', 'EARTH', 'MARS', 'JUPITER',
-        'SATURN', 'URANUS', 'NEPTUNE', 'MOON', 'SUN'
+        'SATURN', 'URANUS', 'NEPTUNE', 'PLUTO', 'MOON',
+        'SUN'
     ]
 
 if obj.upper() in planets:
@@ -64,7 +74,10 @@ else:
 
 match objectType:
     case 'Planet':
-        print('Planet')
+        if obj.lower() == 'pluto':
+            print('Pluto is not a planet anymore')
+        else:
+            print('Planet')
         if (obj.lower() == 'moon') or (obj.lower() == 'sun'):
             target = planetsDB[obj]
         else:
@@ -75,6 +88,7 @@ match objectType:
         ra, dec = getPos(target)
         print(ra)
         print(dec)
+
     case 'Star':
         print('Star')
         hipID = 0
@@ -82,7 +96,11 @@ match objectType:
             df = hipparcos.load_dataframe(f)
 
         hipID = int(BSC5P().getHipFromBayer(obj))
-        target = Star.from_dataframe(df.loc[hipID])
+        try:
+            target = Star.from_dataframe(df.loc[hipID])
+        except KeyError:
+            print('Star not found in Hipparcos catalog')
+            sys.exit(1)
         ts = load.timescale()
         t = ts.now()
         ra, dec = getPos(target)
@@ -92,20 +110,17 @@ match objectType:
     case 'Messier':
         print('Messier object ' + obj)
         target = Messier().getFromRef(obj, 'm')
-        print(hms2deg(target["ra"]))
-        print(dms2deg(target["dec"]))
+        printCoordinates(target)
 
     case 'NGC':
         print('NGC object ' + obj)
         target = Messier().getFromRef(obj, 'ngc')
-        print(hms2deg(target["ra"]))
-        print(dms2deg(target["dec"]))
+        printCoordinates(target)
 
     case 'IC':
         print('IC object ' + obj)
         target = Messier().getFromRef(obj, 'ic')
-        print(hms2deg(target["ra"]))
-        print(dms2deg(target["dec"]))
+        printCoordinates(target)
 
     case _:
         print('Unknown object type')
