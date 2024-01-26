@@ -4,6 +4,8 @@ from skyfield.data import hipparcos
 from getPosFromBSC5P import BSC5P
 from getPosFromMessier import Messier
 
+DEC = "decimal"
+SEX = "sexagesimal"
 
 # define a function that allows to get coordinates of any object
 def getPos(obj):
@@ -15,6 +17,25 @@ def getPos(obj):
     ra = ra._degrees
     dec = dec._degrees
     return ra, dec
+
+
+# define a function that allows to convert decimal degrees to HMS and DMS
+def dec2hms(deg):
+    """ Convert degrees to HMS"""
+    h = int(deg/15)
+    m = int((deg/15 - h)*60)
+    s = ((deg/15 - h)*60 - m)*60
+    #  return str(h) + ':' + str(m) + ':' + str(s)
+    return '{:02}:{:02}:{:02.2f}'.format(h, m, s)
+
+
+def dec2dms(deg):
+    """ Convert degrees to DMS"""
+    d = int(deg)
+    m = int((deg - d)*60)
+    s = ((deg - d)*60 - m)*60
+    #  return str(d) + ':' + str(m) + ':' + str(s)
+    return '{:02}:{:02}:{:02.2f}'.format(int(d), int(m), int(s))
 
 
 def hms2deg(hms):
@@ -29,10 +50,15 @@ def dms2deg(dms):
     return float(d) + float(m)/60 + float(s)/3600
 
 
-def printCoordinates(coord):
-    """ Print coordinates in decimal degrees"""
-    print(hms2deg(coord['RA']))
-    print(dms2deg(coord['Dec']))
+def printCoordinates(coord, format):
+    if format == 'decimal':
+        """ Print coordinates in decimal degrees"""
+        print(hms2deg(coord['ra']))
+        print(dms2deg(coord['dec']))
+    else:
+        """ Print coordinates in HMS and DMS"""
+        print(coord['ra'])
+        print(coord['dec'])
 
 
 try:
@@ -86,8 +112,12 @@ match objectType:
         ts = load.timescale()
         t = ts.now()
         ra, dec = getPos(target)
+        coord = {'ra': ra, 'dec': dec}
+        #  printCoordinates(coord, SEX)
         print(ra)
         print(dec)
+        print(dec2hms(ra))
+        print(dec2dms(dec))
 
     case 'Star':
         print('Star')
@@ -110,17 +140,17 @@ match objectType:
     case 'Messier':
         print('Messier object ' + obj)
         target = Messier().getFromRef(obj, 'm')
-        printCoordinates(target)
+        printCoordinates(target, DEC)
 
     case 'NGC':
         print('NGC object ' + obj)
         target = Messier().getFromRef(obj, 'ngc')
-        printCoordinates(target)
+        printCoordinates(target, DEC)
 
     case 'IC':
         print('IC object ' + obj)
         target = Messier().getFromRef(obj, 'ic')
-        printCoordinates(target)
+        printCoordinates(target, DEC)
 
     case _:
         print('Unknown object type')
