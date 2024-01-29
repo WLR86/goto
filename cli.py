@@ -2,6 +2,7 @@
 
 import cmd
 import subprocess
+from coords import Coords as coords
 
 
 class MyCLI(cmd.Cmd):
@@ -21,7 +22,17 @@ class MyCLI(cmd.Cmd):
         print("Goto", target)
         # exec script prototype.py with target as parameter
         external_file = '/home/willy/projects/astral-test/prototype.py'
-        subprocess.run(['/usr/bin/python3', external_file, target])
+        output = subprocess.check_output(['/usr/bin/python3', external_file, target])
+        try:
+            ra = float(output.decode('utf-8').split('\n')[1])
+            dec = float(output.decode('utf-8').split('\n')[2])
+            c = coords(ra, dec)
+            # ra,dec can be sent to mount
+            # but for now we just diplays them
+            print(c.ra, c.dec)
+            print(c.getCoordsString())
+        except ValueError:
+            print("Error: ", output.decode('utf-8'))
 
     def do_quit(self, line):
         """Exit the CLI."""

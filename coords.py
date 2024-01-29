@@ -59,6 +59,7 @@ class Coords:
         dec = float(self.dec)
         d   = int(dec)
         m   = abs(int((dec - d) * 60))
-        s   = abs((dec - d - m / 60.0) * 3600)
+        r = divmod((dec - d) * 60, 1)
+        s   = abs(r[1] * 60)
         return self.cfg['DMSFormat'] % (d, m, s)
-
+ 
