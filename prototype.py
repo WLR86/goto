@@ -47,7 +47,9 @@ def hms2deg(hms):
 def dms2deg(dms):
     """ Convert DMS to degrees"""
     d, m, s = dms.split(':')
-    return float(d) + float(m)/60 + float(s)/3600
+    d = int(d)
+    k = (d > 0) - (d < 0)
+    return int(d) + k * float(m)/60 + k * float(s)/3600
 
 
 def printCoordinates(coord, format):
@@ -89,6 +91,8 @@ if obj.upper() in planets:
     objectType = 'Planet'
 elif obj.startswith('*'):
     objectType = 'Star'
+elif obj.startswith('HIP') and int(obj[3:]) in range(1, 120404):
+    objectType = 'Hipparcos'
 elif obj.startswith('M') and int(obj[1:]) in range(1, 111):
     objectType = 'Messier'
 elif obj.startswith('NGC') and int(obj[3:]) in range(1, 7840):
@@ -131,6 +135,18 @@ match objectType:
         except KeyError:
             print('Star not found in Hipparcos catalog')
             sys.exit(1)
+        ts = load.timescale()
+        t = ts.now()
+        ra, dec = getPos(target)
+        print(ra)
+        print(dec)
+
+    case 'Hipparcos':
+        print('Hipparcos object ' + obj)
+        hipID = int(obj[3:])
+        with load.open(hipparcos.URL) as f:
+            df = hipparcos.load_dataframe(f)
+        target = Star.from_dataframe(df.loc[hipID])
         ts = load.timescale()
         t = ts.now()
         ra, dec = getPos(target)
