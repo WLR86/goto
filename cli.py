@@ -20,19 +20,31 @@ class MyCLI(cmd.Cmd):
     def do_goto(self, target):
         """Go to the specified target."""
         print("Goto", target)
+        try:
+            ra, dec = self.do_lookFor(target)
+            c = coords(ra, dec)
+            # ra,dec can be sent to mount
+            # but for now we just diplays them
+            print(c.ra, c.dec)
+            print(c.getCoordsString())
+
+        except TypeError:
+            print("Error: Target not found")
+            return False
+
+    def do_lookFor(self, target):
+        """Search for the specified target."""
         # exec script prototype.py with target as parameter
         external_file = '/home/willy/projects/astral-test/prototype.py'
         output = subprocess.check_output(['/usr/bin/python3', external_file, target])
         try:
             ra = float(output.decode('utf-8').split('\n')[1])
             dec = float(output.decode('utf-8').split('\n')[2])
-            c = coords(ra, dec)
-            # ra,dec can be sent to mount
-            # but for now we just diplays them
-            print(c.ra, c.dec)
-            print(c.getCoordsString())
+            return (ra, dec)
+
         except ValueError:
             print("Error: ", output.decode('utf-8'))
+            return False
 
     def do_quit(self, line):
         """Exit the CLI."""

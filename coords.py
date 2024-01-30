@@ -9,7 +9,7 @@ class Coords:
         self.dec = float(dec)
         self.cfg = dict({
             'HMSFormat': "%02dh%02d′%04.1f″",
-            'DMSFormat': "%02d°%02d′%04.1f″"
+            'DMSFormat': "%s%02d°%02d′%04.1f″"
         })
 
     def set(self, ra: float, dec: float) -> None:
@@ -49,17 +49,23 @@ class Coords:
         """ Convert ra in decimal degrees to HMS """
         ra = float(self.ra)
         ra = ra / 15.0
-        h  = int(ra)
-        m  = int((ra - h) * 60)
-        s  = (ra - h - m / 60.0) * 3600
+        h = int(ra)
+        m = int((ra - h) * 60)
+        s = (ra - h - m / 60.0) * 3600
         return self.cfg['HMSFormat'] % (h, m, s)
 
     def dec2dms(self):
         """ Convert dec in decimal degrees to DMS """
         dec = float(self.dec)
-        d   = int(dec)
-        m   = abs(int((dec - d) * 60))
+        d = int(dec)
+        m = abs(int((dec - d) * 60))
         r = divmod((dec - d) * 60, 1)
-        s   = abs(r[1] * 60)
-        return self.cfg['DMSFormat'] % (d, m, s)
- 
+        s = abs(r[1] * 60)
+        d = abs(d)
+        # store sign in sign variable
+        if dec < 0:
+            sign = '-'
+        else:
+            sign = '+'
+
+        return self.cfg['DMSFormat'] % (sign, d, m, s)
