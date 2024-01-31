@@ -61,7 +61,7 @@ class Coords:
         m = abs(int((dec - d) * 60))
         r = divmod((dec - d) * 60, 1)
         s = abs(r[1] * 60)
-        s = (60 - s) * (d < 0) + s * ( d > 0 ) # store sign in sign variable
+        s = (60 - s) * (d < 0) + s * (d > 0)  # store sign in sign variable
         if dec < 0:
             d = abs(d)
             sign = '-'

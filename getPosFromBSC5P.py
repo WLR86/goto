@@ -25,8 +25,9 @@ class BSC5P:
         data = json.load(open(self.datasource))
         hipID = 0
         for star in data:
+
             for value in star['namesAlt']:
-                if value == bayer:
+                if value.lower() == bayer.lower():
                     # we found the star but we need to get the
                     # HIP ID among the other names
                     for name in star['namesAlt']:

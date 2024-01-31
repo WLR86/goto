@@ -71,7 +71,7 @@ except IndexError:
 
 load = Loader('~/skyfield-data')
 planetsDB = load('de421.bsp')
-# Location of the observer and target
+# Location of the observer and tgt
 earth = planetsDB['earth']
 pos = {'lon': 0.55, 'lat': 46.36, 'elevation_m': 110}
 
@@ -109,13 +109,13 @@ match objectType:
         else:
             print('Planet')
         if (obj.lower() == 'moon') or (obj.lower() == 'sun'):
-            target = planetsDB[obj]
+            tgt = planetsDB[obj]
         else:
-            target = planetsDB[obj.lower() + ' barycenter']
+            tgt = planetsDB[obj.lower() + ' barycenter']
 
         ts = load.timescale()
         t = ts.now()
-        ra, dec = getPos(target)
+        ra, dec = getPos(tgt)
         coord = {'ra': ra, 'dec': dec}
         #  printCoordinates(coord, SEX)
         print(ra)
@@ -131,13 +131,13 @@ match objectType:
 
         hipID = int(BSC5P().getHipFromBayer(obj))
         try:
-            target = Star.from_dataframe(df.loc[hipID])
+            tgt = Star.from_dataframe(df.loc[hipID])
         except KeyError:
             print('Star not found in Hipparcos catalog')
             sys.exit(1)
         ts = load.timescale()
         t = ts.now()
-        ra, dec = getPos(target)
+        ra, dec = getPos(tgt)
         print(ra)
         print(dec)
 
@@ -146,27 +146,32 @@ match objectType:
         hipID = int(obj[3:])
         with load.open(hipparcos.URL) as f:
             df = hipparcos.load_dataframe(f)
-        target = Star.from_dataframe(df.loc[hipID])
+        tgt = Star.from_dataframe(df.loc[hipID])
         ts = load.timescale()
         t = ts.now()
-        ra, dec = getPos(target)
+        ra, dec = getPos(tgt)
         print(ra)
         print(dec)
 
     case 'Messier':
         print('Messier object ' + obj)
-        target = Messier().getFromRef(obj, 'm')
-        printCoordinates(target, DEC)
+        tgt = Messier().getFromRef(obj, 'm')
+        #  if tgt["common_names"]:
+            #  print(tgt["common_names"])
+
+        printCoordinates(tgt, DEC)
 
     case 'NGC':
         print('NGC object ' + obj)
-        target = Messier().getFromRef(obj, 'ngc')
-        printCoordinates(target, DEC)
+        tgt = Messier().getFromRef(obj, 'ngc')
+        #  print(tgt["common_names"])
+        printCoordinates(tgt, DEC)
 
     case 'IC':
         print('IC object ' + obj)
-        target = Messier().getFromRef(obj, 'ic')
-        printCoordinates(target, DEC)
+        tgt = Messier().getFromRef(obj, 'ic')
+        #  print(tgt["common_names"])
+        printCoordinates(tgt, DEC)
 
     case _:
         print('Unknown object type')

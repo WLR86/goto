@@ -32,6 +32,10 @@ class MyCLI(cmd.Cmd):
             print("Error: Target not found")
             return False
 
+        except subprocess.CalledProcessError:
+            print("Error: Target not found")
+            return False
+
     def do_lookFor(self, target):
         """Search for the specified target."""
         # exec script prototype.py with target as parameter
