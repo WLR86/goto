@@ -3,6 +3,7 @@
 import cmd
 import subprocess
 from coords import Coords as coords
+from resolver import resolv as res
 
 
 class MyCLI(cmd.Cmd):
@@ -21,10 +22,8 @@ class MyCLI(cmd.Cmd):
         """Go to the specified target."""
         print("Goto", target)
         try:
-            ra, dec = self.do_lookFor(target)
+            ra, dec = self.lookFor(target)
             c = coords(ra, dec)
-            # ra,dec can be sent to mount
-            # but for now we just diplays them
             print(c.ra, c.dec)
             print(c.getCoordsString())
 
@@ -36,19 +35,11 @@ class MyCLI(cmd.Cmd):
             print("Error: Target not found")
             return False
 
-    def do_lookFor(self, target):
+    def lookFor(self, target):
         """Search for the specified target."""
-        # exec script prototype.py with target as parameter
-        external_file = '/home/willy/projects/astral-test/prototype.py'
-        output = subprocess.check_output(['/usr/bin/python3', external_file, target])
-        try:
-            ra = float(output.decode('utf-8').split('\n')[1])
-            dec = float(output.decode('utf-8').split('\n')[2])
-            return (ra, dec)
-
-        except ValueError:
-            print("Error: ", output.decode('utf-8'))
-            return False
+        r = res(target)
+        ra, dec = r.resolve()
+        return ra, dec
 
     def do_quit(self, line):
         """Exit the CLI."""

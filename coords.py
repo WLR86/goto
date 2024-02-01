@@ -11,6 +11,8 @@ class Coords:
             'HMSFormat': "%02dh%02d′%04.1f″",
             'DMSFormat': "%s%02d°%02d′%04.1f″"
         })
+        self.ra_hms = self.ra2hms()
+        self.dec_dms = self.dec2dms()
 
     def set(self, ra: float, dec: float) -> None:
         """ Set the coordinates from ra and dec in decimal degrees"""

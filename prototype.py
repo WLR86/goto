@@ -160,12 +160,13 @@ match objectType:
             #  print(tgt["common_names"])
 
         printCoordinates(tgt, DEC)
+        #  print(tgt["common_names"])
 
     case 'NGC':
         print('NGC object ' + obj)
         tgt = Messier().getFromRef(obj, 'ngc')
-        #  print(tgt["common_names"])
         printCoordinates(tgt, DEC)
+        #  print(tgt["common_names"])
 
     case 'IC':
         print('IC object ' + obj)
