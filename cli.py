@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import cmd
-import subprocess
 from coords import Coords as coords
 from resolver import resolv as res
 
@@ -57,4 +56,5 @@ class MyCLI(cmd.Cmd):
 
 if __name__ == '__main__':
     MyCLI().cmdloop()
+
 
