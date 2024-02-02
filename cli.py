@@ -19,7 +19,19 @@ class MyCLI(cmd.Cmd):
         print(line)
 
     def do_goto(self, target):
-        """Go to the specified target."""
+        """Go to specified target."""
+        print("Goto", target)
+        try:
+            ra, dec = self.lookFor(target)
+            c = coords(ra, dec)
+            print(c.ra, c.dec)
+            print(c.getCoordsString())
+
+        except TypeError:
+            print("Error: Target not found")
+            return False
+    def do_show(self, target):
+        """look for the specified target and display info."""
         print("Goto", target)
         try:
             ra, dec = self.lookFor(target)
@@ -31,13 +43,10 @@ class MyCLI(cmd.Cmd):
             print("Error: Target not found")
             return False
 
-        except subprocess.CalledProcessError:
-            print("Error: Target not found")
-            return False
-
     def lookFor(self, target):
         """Search for the specified target."""
         r = res(target)
+        r.setPos(lat=46.3, lon=0.55, elev=110)
         ra, dec = r.resolve()
         return ra, dec
 

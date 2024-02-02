@@ -65,18 +65,20 @@ class resolv:
             print(coord['ra'])
             print(coord['dec'])
 
+    def setPos(self, lat, lon, elev):
+        self.pos = {'lat': lat, 'lon': lon, 'elev': elev}
+
     def resolve(self):
         obj = self.obj
         load = Loader('~/skyfield-data')
         planetsDB = load('de421.bsp')
         # Location of the observer and tgt
         earth = planetsDB['earth']
-        pos = {'lon': 0.55, 'lat': 46.36, 'elevation_m': 110}
 
         self.obs_location = earth + Topos(
-                pos['lat'],
-                pos['lon'],
-                elevation_m=pos['elevation_m']
+                self.pos['lat'],
+                self.pos['lon'],
+                elevation_m=self.pos['elev']
             )
 
         planets = [
@@ -91,12 +93,15 @@ class resolv:
             objectType = 'Star'
         elif obj.upper().startswith('HIP') and int(obj[3:]) in range(1, 120404):
             objectType = 'Hipparcos'
-        elif obj.startswith('M') and int(obj[1:]) in range(1, 111):
+        elif obj.upper().startswith('M') and int(obj[1:]) in range(1, 111):
             objectType = 'Messier'
+            obj = obj.upper()
         elif obj.upper().startswith('NGC') and int(obj[3:]) in range(1, 7840):
             objectType = 'NGC'
+            obj = obj.upper()
         elif obj.upper().startswith('IC') and int(obj[2:]) in range(1, 5386):
             objectType = 'IC'
+            obj = obj.upper()
         else:
             objectType = 'unknown'
 
