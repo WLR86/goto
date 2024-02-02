@@ -65,6 +65,9 @@ class resolv:
             print(coord['ra'])
             print(coord['dec'])
 
+    def setPosFromDict(self, position):
+        self.pos = position
+
     def setPos(self, lat, lon, elev):
         self.pos = {'lat': lat, 'lon': lon, 'elev': elev}
 

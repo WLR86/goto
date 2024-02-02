@@ -3,11 +3,34 @@
 import cmd
 from coords import Coords as coords
 from resolver import resolv as res
+import configparser
+
+cfg = configparser.ConfigParser()
+# check if config file exists
+config = 'config.ini'
+
+try:
+    cfg.read(config)
+except FileNotFoundError:
+    print("Error: No config file found")
+    exit(1)
+
+pos = {}
+
+try:
+    for key in cfg['OBS']:
+        try:
+            pos[key] = cfg.getfloat('OBS', key)
+        except ValueError:
+            pos[key] = cfg.get('OBS', key)
+except KeyError:
+    print("Error: No [OBS] section found in config.ini")
+    exit(1)
 
 
 class MyCLI(cmd.Cmd):
     prompt = 'Scope > '
-    intro = 'Welcome to MyCLI. Type "help" for available commands.'
+    intro = 'Welcome to ScopeCLI. Type "help" for available commands.'
 
     def do_hello(self, line):
         """Print a greeting."""
@@ -23,12 +46,13 @@ class MyCLI(cmd.Cmd):
         try:
             ra, dec = self.lookFor(target)
             c = coords(ra, dec)
-            print(c.ra, c.dec)
+            #  print(c.ra, c.dec)
             print(c.getCoordsString())
 
         except TypeError:
             print("Error: Target not found")
             return False
+
     def do_show(self, target):
         """look for the specified target and display info."""
         print("Goto", target)
@@ -42,10 +66,14 @@ class MyCLI(cmd.Cmd):
             print("Error: Target not found")
             return False
 
+    def do_showObs(self, line):
+        """Show the current position."""
+        print(pos)
+
     def lookFor(self, target):
         """Search for the specified target."""
         r = res(target)
-        r.setPos(lat=46.3, lon=0.55, elev=110)
+        r.setPosFromDict(pos)
         ra, dec = r.resolve()
         return ra, dec
 
@@ -56,5 +84,3 @@ class MyCLI(cmd.Cmd):
 
 if __name__ == '__main__':
     MyCLI().cmdloop()
-
-

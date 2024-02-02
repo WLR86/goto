@@ -1,7 +1,6 @@
 import PyIndi
 import time
 import sys
-import threading
 import json
 import requests
 import configparser
