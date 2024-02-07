@@ -33,14 +33,6 @@ class MyCLI(cmd.Cmd):
     prompt = 'Scope > '
     intro = 'Welcome to ScopeCLI. Type "help" for available commands.'
 
-    def do_hello(self, line):
-        """Print a greeting."""
-        print("Hello, World!")
-
-    def do_print(self, line):
-        """Print the input."""
-        print(line)
-
     def do_goto(self, target):
         """
         Go to specified target.

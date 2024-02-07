@@ -186,8 +186,6 @@ class resolv:
 
             case 'Messier' | 'NGC' | 'IC':
                 print(objectType + ' object ' + obj)
-                # extract letters from the object name (remove numbers)
-                #  type = ''.join([i for i in obj if not i.isdigit()]).lower()
                 tgt = Messier().getFromRef(obj, type)
                 ra, dec = self.hms2deg(tgt['ra']), self.dms2deg(tgt['dec'])
                 alt, az = self.getAltAz({'ra': ra, 'dec': dec})
