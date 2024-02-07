@@ -3,6 +3,10 @@ from skyfield.api import Topos, Loader, Star
 from skyfield.data import hipparcos
 from getPosFromBSC5P import BSC5P
 from getPosFromMessier import Messier
+from astropy.coordinates import EarthLocation, SkyCoord
+from astropy.time import Time
+from astropy import units as u
+from astropy.coordinates import AltAz
 
 
 class resolv:
@@ -15,13 +19,29 @@ class resolv:
         self.DEC = "decimal"
         self.SEX = "sexagesimal"
 
+    # Get the altitude and azimuth of an object using astropy from its ra and dec
+    def getAltAz(self, target):
+        """
+        Get the altitude and azimuth of an object at the given time
+        target: dictionary with ra and dec in decimal degrees
+        """
+        observing_location = EarthLocation(
+                lat=self.pos['lat'],
+                lon=self.pos['lon'],
+                height=self.pos['elev']*u.m
+        )
+        observing_time = Time.now()
+        aa = AltAz(location=observing_location, obstime=observing_time)
+        coord = SkyCoord(ra=target['ra']*u.degree, dec=target['dec']*u.degree)
+        altaz = coord.transform_to(aa)
+        return altaz.alt.degree, altaz.az.degree
+
     # define a function that allows to get coordinates of any object
     def getPos(self, obj):
         """ Get the position of an object at the given time"""
         astrometric = self.obs_location.at(self.t).observe(obj)
         appa = astrometric.apparent()
         ra, dec, distance = appa.radec()
-        # get ra and dec in degrees
         ra = ra._degrees
         dec = dec._degrees
         return ra, dec
@@ -32,7 +52,6 @@ class resolv:
         h = int(deg/15)
         m = int((deg/15 - h)*60)
         s = ((deg/15 - h)*60 - m)*60
-        #  return str(h) + ':' + str(m) + ':' + str(s)
         return '{:02}:{:02}:{:02.2f}'.format(h, m, s)
 
     def dec2dms(self, deg):
@@ -40,7 +59,6 @@ class resolv:
         d = int(deg)
         m = int((deg - d)*60)
         s = ((deg - d)*60 - m)*60
-        #  return str(d) + ':' + str(m) + ':' + str(s)
         return '{:02}:{:02}:{:02.2f}'.format(int(d), int(m), int(s))
 
     def hms2deg(self, hms):
@@ -98,12 +116,15 @@ class resolv:
             objectType = 'Hipparcos'
         elif obj.upper().startswith('M') and int(obj[1:]) in range(1, 111):
             objectType = 'Messier'
+            type = 'm'
             obj = obj.upper()
         elif obj.upper().startswith('NGC') and int(obj[3:]) in range(1, 7840):
             objectType = 'NGC'
+            type = objectType.lower()
             obj = obj.upper()
         elif obj.upper().startswith('IC') and int(obj[2:]) in range(1, 5386):
             objectType = 'IC'
+            type = objectType.lower()
             obj = obj.upper()
         else:
             objectType = 'unknown'
@@ -123,7 +144,9 @@ class resolv:
                 self.t = ts.now()
                 ra, dec = self.getPos(tgt)
                 self.coord = {'ra': ra, 'dec': dec}
-                #  printCoordinates(coord, SEX)
+                alt, az = self.getAltAz(self.coord)
+                if alt < 0:
+                    print('Planet is below the horizon')
                 return ra, dec
 
             case 'Star':
@@ -141,6 +164,10 @@ class resolv:
                 ts = load.timescale()
                 self.t = ts.now()
                 ra, dec = self.getPos(tgt)
+                alt, az = self.getAltAz({'ra': ra, 'dec': dec})
+                if alt < 0:
+                    print('Star is below the horizon')
+
                 return ra, dec
 
             case 'Hipparcos':
@@ -152,22 +179,21 @@ class resolv:
                 ts = load.timescale()
                 self.t = ts.now()
                 ra, dec = self.getPos(tgt)
+                alt, az = self.getAltAz(tgt)
+                if alt < 0:
+                    print('Star is below the horizon')
                 return ra, dec
 
-            case 'Messier':
-                print('Messier object ' + obj)
-                tgt = Messier().getFromRef(obj, 'm')
-                return self.hms2deg(tgt['ra']), self.dms2deg(tgt['dec'])
-
-            case 'NGC':
-                print('NGC object ' + obj)
-                tgt = Messier().getFromRef(obj, 'ngc')
-                return self.hms2deg(tgt['ra']), self.dms2deg(tgt['dec'])
-
-            case 'IC':
-                print('IC object ' + obj)
-                tgt = Messier().getFromRef(obj, 'ic')
-                return self.hms2deg(tgt['ra']), self.dms2deg(tgt['dec'])
+            case 'Messier' | 'NGC' | 'IC':
+                print(objectType + ' object ' + obj)
+                # extract letters from the object name (remove numbers)
+                #  type = ''.join([i for i in obj if not i.isdigit()]).lower()
+                tgt = Messier().getFromRef(obj, type)
+                ra, dec = self.hms2deg(tgt['ra']), self.dms2deg(tgt['dec'])
+                alt, az = self.getAltAz({'ra': ra, 'dec': dec})
+                if alt < 0:
+                    print('Object is below the horizon')
+                return ra, dec
 
             case _:
                 print('Unknown object type')

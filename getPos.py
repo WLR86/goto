@@ -43,8 +43,8 @@ print(f'Dec: {dec}')
 # we need to convert coordinates to degrees
 ra_deg = ra._degrees
 dec_deg = dec._degrees
-print(f'RA: {ra_deg}')
-print(f'Dec: {dec_deg}')
+print(f'RA deg: {ra_deg}')
+print(f'Dec deg: {dec_deg}')
 
 with load.open(hipparcos.URL) as f:
     df = hipparcos.load_dataframe(f)

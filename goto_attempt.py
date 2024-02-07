@@ -5,7 +5,7 @@ indiclient = PyIndi.IndiClient()
 
 def connect_to_telescope():
     # Connect to INDI server
-    indiclient.setServer("localhost", 7624)
+    indiclient.setServer("cloud-1", 7624)
     if not(indiclient.connectServer()):
         print("Failed to connect to INDI server")
         return False
@@ -13,7 +13,7 @@ def connect_to_telescope():
     # Wait for telescope device to be available
     telescope_device = None
     while not telescope_device:
-        telescope_device = indiclient.getDevice("Telescope")
+        telescope_device = indiclient.getDevice("Telescope Simulator")
         if not telescope_device:
             print("Telescope device not found. Retrying...")
             indiclient.watchDevice("Telescope", True, True)
