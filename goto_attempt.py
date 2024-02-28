@@ -1,7 +1,7 @@
 import PyIndi
 
 # Connect to INDI server
-indiclient = PyIndi.IndiClient()
+indiclient = PyIndi.BaseClient()
 
 def connect_to_telescope():
     # Connect to INDI server
