@@ -41,17 +41,82 @@ except KeyError:
 
 class MyCLI(cmd.Cmd):
     prompt = 'Scope > '
-    intro = 'Welcome to ScopeCLI. Type "help" for available commands.'
+    intro = 'Welcome to ScopeCLI! Type help or ? to list commands.'
+    telescope = None
 
     # define what happens when the cli interface is started
     def preloop(self):
         """
         Initialize the CLI.
         """
+        print("ScopeCLI is starting....")
+        self.do_connect(self)
+        time.sleep(0.5)
+        self.do_connectTelescope(self)
+        time.sleep(0.5)
         print("ScopeCLI initialized.")
+        self.do_clear(self)
+        # move cursor to previous line
+        print("\033[F\033[F")
+        self.do_status(self)
 
     def emptyline(self):
         pass
+
+    def do_g(self, target):
+        """
+        Go to specified target. Shortcut for goto.
+        Usage: g <target>
+        """
+        self.do_goto(target)
+
+    def do_s(self, target):
+        """
+        Look for the specified target and display info. Shortcut for show.
+        Usage: s <target>
+        """
+        self.do_show(target)
+
+    def do_q(self, line):
+        """Exit the CLI. Shortcut for quit."""
+        return True
+
+    def do_t(self, line):
+        """Connect to the telescope. Shortcut for telescope."""
+        self.do_telescope(line)
+
+    def do_c(self, line):
+        """Connect to the telescope. Shortcut for connect."""
+        self.do_connect(line)
+
+    def do_d(self, line):
+        """Disconnect from the telescope. Shortcut for disconnect."""
+        self.do_disconnect(line)
+
+    def do_gcs(self, line):
+        """Get the connection status. Shortcut for getConnectionStatus."""
+        self.do_getConnectionStatus(line)
+
+    def do_gp(self, line):
+        """Get the current position of the telescope. Shortcut for getPos."""
+        self.do_getPos(line)
+
+    def do_scp(self, line):
+        """Show the current position of the telescope. Shortcut for showCurrentScopePos."""
+        self.do_showCurrentScopePos(line)
+
+    def do_cls(self, line):
+        """Clear the screen. Shortcut for clear."""
+        self.do_clear(line)
+
+    def isTelecopeConnected(self):
+        """
+        Check if the telescope is connected.
+        """
+        if not self.telescope:
+            print("Error: Telescope not connected")
+            return False
+        return True
 
     def do_telescope(self, line):
         """
@@ -110,22 +175,40 @@ class MyCLI(cmd.Cmd):
         if status == "online":
             print("Connected to INDI server ", cfg.get('INDI', 'server'), ":", cfg.get('INDI', 'port'))
 
-    # define a function that gets the current position of the telescope
-    def do_getPos(self, line):
+
+    # define a function that diplays the current position of the telescope
+    def do_showCurrentScopePos(self, line):
         """
-        Get the current position of the telescope.
-        Usage: getPos
+        Show the current position of the telescope.
+        Usage: showPos
         """
-        print("Getting current position")
-        client = indiClient.IndiClient()
-        pos = client.getTelescopePosition()
-        print(pos)
+        if not self.isTelecopeConnected():
+            return False
+        #  print("Getting current scope position")
+        telescope_connect = self.telescope.getSwitch("CONNECTION")
+        telescope_connect.reset()
+        telescope_connect[0].setState(PyIndi.ISS_ON)
+        client.sendNewProperty(telescope_connect)
+
+        telescope_on_coord_set = self.telescope.getSwitch("ON_COORD_SET")
+        telescope_on_coord_set.reset()
+        telescope_on_coord_set[0].setState(PyIndi.ISS_ON)
+        client.sendNewProperty(telescope_on_coord_set)
+
+        radec = self.telescope.getNumber("EQUATORIAL_EOD_COORD")
+        # right ascension is in hours, we need to convert it to degrees
+        currentCoords = radec[0].value * 360 / 24, radec[1].value
+        fCoords = coords(currentCoords[0], currentCoords[1])
+        print("Scope Current Position :", fCoords.ra_hms, fCoords.dec_dms)
+
 
     def do_goto(self, target):
         """
         Go to specified target.
         Usage: goto <target>
         """
+        if not self.isTelecopeConnected():
+            return False
         if not self.parameterTest(target):
             return False
         print("Goto", target)
@@ -158,20 +241,39 @@ class MyCLI(cmd.Cmd):
 
         try:
             client.sendNewProperty(radec)
+            while radec.getState() == PyIndi.IPS_BUSY:
+                currentCoords = radec[0].value * 360 / 24, radec[1].value
+                fCoords = coords(currentCoords[0], currentCoords[1])
+                print("Scope Moving ", fCoords.ra_hms, fCoords.dec_dms)
+                # set the cursor position to previous line
+                print("\033[F\033[F") 
+                time.sleep(0.5)
+            print("\a")
+            print("Scope Stopped")
+
         except TypeError:
             print("Error: Could not send new property")
             return False
 
-    # define a function that shows the current position of the telescope
+    # define a function that diplays current status using some of the methods defined in this class, such as connection status, observatory, and current position
+    def do_status(self, line):
+        """
+        Show the current status.
+        Usage: status
+        """
+        self.do_getConnectionStatus(self)
+        self.do_showObs(self)
+        self.do_showCurrentScopePos(self)
+
+    # define a function that shows the current coordinates the telescope is pointing to
     def do_showPos(self, line):
         """
         Show the current position of the telescope.
         Usage: showPos
         """
-        print("Getting current position")
-        client = indiClient.IndiClient()
-        pos = client.getTelescopePosition()
-        print(pos)
+        if not self.isTelecopeConnected():
+            return False
+        self.do_showCurrentScopePos(self)
 
     def do_show(self, target):
         """
@@ -184,7 +286,7 @@ class MyCLI(cmd.Cmd):
         try:
             ra, dec = self.lookFor(target)
             c = coords(ra, dec)
-            print(c.ra, c.dec)
+            #  print(c.ra, c.dec)
             print(c.getCoordsString())
 
         except TypeError:
@@ -258,7 +360,8 @@ class MyCLI(cmd.Cmd):
         Show the current position.
         Usage: showObs
         """
-        print(pos)
+        print("Observatoire : ", pos['name'])
+        print("Lat, Lon, Elev : ", pos['lat'], pos['lon'], pos['elev'])
 
     # define a function that clears the screen
     def do_clear(self, line):
