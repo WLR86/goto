@@ -179,7 +179,7 @@ class resolv:
                 ts = load.timescale()
                 self.t = ts.now()
                 ra, dec = self.getPos(tgt)
-                alt, az = self.getAltAz(tgt)
+                alt, az = self.getAltAz({'ra': ra, 'dec': dec})
                 if alt < 0:
                     print('Star is below the horizon')
                 return ra, dec

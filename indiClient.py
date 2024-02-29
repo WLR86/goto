@@ -1,5 +1,6 @@
 import logging
 import PyIndi
+from device import Device
 
 # The IndiClient class which inherits from the module PyIndi.BaseClient class
 # Note that all INDI constants are accessible from the module as PyIndi.CONSTANTNAME
@@ -8,6 +9,15 @@ class IndiClient(PyIndi.BaseClient):
         super(IndiClient, self).__init__()
         self.logger = logging.getLogger('IndiClient')
         self.logger.info('creating an instance of IndiClient')
+
+    def devices_names(self):
+        return [d.getDeviceName() for d in self.getDevices()]
+
+    def device_by_interface(self, interface):
+        return [Device(x, self) for x in self.__devices_by_interface(interface)]
+
+    def telescopes(self):
+        return self.device_by_interface('telescope')
 
     def newDevice(self, d):
         '''Emmited when a new device is created from INDI server.'''

@@ -4,6 +4,7 @@ import cmd
 from coords import Coords as coords
 from resolver import resolv as res
 import configparser
+from termcolor import cprint, colored
 import time
 import PyIndi
 import indiClient
@@ -16,14 +17,21 @@ client = indiClient.IndiClient()
 try:
     cfg.read(config)
 except FileNotFoundError:
-    print("Error: No config file found")
+    print(colored("Error: No config file found"), 'red')
     exit(1)
 except configparser.MissingSectionHeaderError:
-    print("Error: Invalid config file")
+    print(colored("Error: Invalid config file"), 'red')
     exit(1)
 except configparser.DuplicateOptionError:
-    print("Error: Duplicate item in config file")
+    print(colored("Error: Duplicate item in config file"), 'red')
     exit(1)
+
+try:
+    with open(cfg['UI']['banner'], 'r') as f:
+        bannerText = f.read()
+        bannerColor = cfg['UI']['bannerColor']
+except FileNotFoundError:
+    banner = ''
 
 pos = {}
 
@@ -35,12 +43,12 @@ try:
         except ValueError:
             pos[key] = cfg.get('OBS.1', key)
 except KeyError:
-    print("Error: No [OBS] section found in config.ini")
+    print(colored("Error: No [OBS] section found in config.ini"), 'red')
     exit(1)
 
 
 class MyCLI(cmd.Cmd):
-    prompt = 'Scope > '
+    prompt = colored('Scope > ', 'green')
     intro = 'Welcome to ScopeCLI! Type help or ? to list commands.'
     telescope = None
 
@@ -58,10 +66,20 @@ class MyCLI(cmd.Cmd):
         self.do_clear(self)
         # move cursor to previous line
         print("\033[F\033[F")
+        self.do_banner(self)
         self.do_status(self)
 
     def emptyline(self):
         pass
+
+    def do_banner(self, line):
+        """
+        Display the banner.
+        Usage: banner
+        """
+        cprint('ScopeCLI', 'red', attrs=['bold'])
+        cprint(bannerText, bannerColor)
+        cprint('Made with ❤️ by Weetos', 'blue')
 
     def do_g(self, target):
         """
@@ -97,10 +115,6 @@ class MyCLI(cmd.Cmd):
         """Get the connection status. Shortcut for getConnectionStatus."""
         self.do_getConnectionStatus(line)
 
-    def do_gp(self, line):
-        """Get the current position of the telescope. Shortcut for getPos."""
-        self.do_getPos(line)
-
     def do_scp(self, line):
         """Show the current position of the telescope. Shortcut for showCurrentScopePos."""
         self.do_showCurrentScopePos(line)
@@ -117,6 +131,23 @@ class MyCLI(cmd.Cmd):
             print("Error: Telescope not connected")
             return False
         return True
+
+    def do_listDevices(self, line):
+
+        """
+        List available devices.
+        """
+        devices = client.devices_names()
+        for device in devices:
+            print(device)
+
+    def do_listTelescope(self, line):
+        """
+        List available telescope devices.
+        """
+        devices = client.device_by_interface("Telescope")
+        for device in devices:
+            print(device)
 
     def do_telescope(self, line):
         """
@@ -170,7 +201,7 @@ class MyCLI(cmd.Cmd):
         Get the connection status.
         Usage: getConnectionStatus
         """
-        status = "online" if client.isServerConnected() else "offline"
+        status = colored("online", 'green') if client.isServerConnected() else colored("offline", 'red')
         print("Connection status is", status)
         if status == "online":
             print("Connected to INDI server ", cfg.get('INDI', 'server'), ":", cfg.get('INDI', 'port'))
@@ -211,11 +242,11 @@ class MyCLI(cmd.Cmd):
             return False
         if not self.parameterTest(target):
             return False
-        print("Goto", target)
+        #  print("Goto", target)
         try:
             ra, dec = self.lookFor(target)
             c = coords(ra, dec)
-            print(c.getCoordsString())
+            #  print(c.getCoordsString())
 
             telescope_connect = self.telescope.getSwitch("CONNECTION")
             telescope_connect.reset()
@@ -244,12 +275,15 @@ class MyCLI(cmd.Cmd):
             while radec.getState() == PyIndi.IPS_BUSY:
                 currentCoords = radec[0].value * 360 / 24, radec[1].value
                 fCoords = coords(currentCoords[0], currentCoords[1])
-                print("Scope Moving ", fCoords.ra_hms, fCoords.dec_dms)
-                # set the cursor position to previous line
-                print("\033[F\033[F") 
+                cprint("  Scope slewing..." + fCoords.ra_hms + fCoords.dec_dms, 'blue')
+                # set the cursor position at the end of the previous line
+                print("\033[F\033[F")
                 time.sleep(0.5)
             print("\a")
-            print("Scope Stopped")
+            print("\033[F\033[F")
+            # clear the current line
+            print("\033[K\033[F")
+            print("Slew completed")
 
         except TypeError:
             print("Error: Could not send new property")
@@ -282,7 +316,7 @@ class MyCLI(cmd.Cmd):
         """
         if not self.parameterTest(target):
             return False
-        print("Goto", target)
+        #  print("Goto", target)
         try:
             ra, dec = self.lookFor(target)
             c = coords(ra, dec)
@@ -391,11 +425,16 @@ class MyCLI(cmd.Cmd):
         Usage: test <param>
         """
         if not line:
-            print("Error: Missing parameter")
+            self.printError("Error: Missing parameter")
             return False
 
         return True
 
+    def printError(self, line):
+        """
+        Print an error message.
+        """
+        print(colored(line, 'red'))
 
 if __name__ == '__main__':
     MyCLI().cmdloop()
