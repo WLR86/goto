@@ -134,7 +134,7 @@ class resolv:
                 if obj.lower() == 'pluto':
                     print('Pluto is not a planet anymore')
                 else:
-                    print('Planet')
+                    print('Getting coordinates of Planet', obj.upper())
                 if (obj.lower() == 'moon') or (obj.lower() == 'sun'):
                     tgt = planetsDB[obj]
                 else:
@@ -146,11 +146,11 @@ class resolv:
                 self.coord = {'ra': ra, 'dec': dec}
                 alt, az = self.getAltAz(self.coord)
                 if alt < 0:
-                    print('Planet is below the horizon')
+                    print('Planet', obj.upper(), ' is below the horizon')
                 return ra, dec
 
             case 'Star':
-                print('Star')
+                print('Getting coordinates of Star', obj.upper())
                 hipID = 0
                 with load.open(hipparcos.URL) as f:
                     df = hipparcos.load_dataframe(f)
@@ -160,7 +160,7 @@ class resolv:
                     tgt = Star.from_dataframe(df.loc[hipID])
                 except KeyError:
                     print('Star not found in Hipparcos catalog')
-                    sys.exit(1)
+                    return None, None
                 ts = load.timescale()
                 self.t = ts.now()
                 ra, dec = self.getPos(tgt)
@@ -171,7 +171,7 @@ class resolv:
                 return ra, dec
 
             case 'Hipparcos':
-                print('Hipparcos object ' + obj)
+                print('Getting coordinates of Hipparcos object ' + obj)
                 hipID = int(obj[3:])
                 with load.open(hipparcos.URL) as f:
                     df = hipparcos.load_dataframe(f)
@@ -185,7 +185,7 @@ class resolv:
                 return ra, dec
 
             case 'Messier' | 'NGC' | 'IC':
-                print(objectType + ' object ' + obj)
+                print('Getting coordinates of ', objectType + ' object ' + obj)
                 tgt = Messier().getFromRef(obj, type)
                 ra, dec = self.hms2deg(tgt['ra']), self.dms2deg(tgt['dec'])
                 alt, az = self.getAltAz({'ra': ra, 'dec': dec})

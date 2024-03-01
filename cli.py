@@ -8,6 +8,8 @@ from termcolor import cprint, colored
 import time
 import PyIndi
 import indiClient
+from astropy.coordinates import SkyCoord, FK5
+import astropy.units as u
 
 cfg = configparser.ConfigParser()
 # check if config file exists
@@ -262,11 +264,18 @@ class MyCLI(cmd.Cmd):
             while not radec:
                 time.sleep(0.5)
                 radec = self.telescope.getNumber("EQUATORIAL_EOD_COORD")
-            radec[0].setValue(c.ra * 24 / 360)
-            radec[1].setValue(c.dec)
+
+            # EQUATORIAL_EOD_COORD is not J2000
+            # and EQUATORIAL_COORD (J2000) is not supported according to the INDI documentation
+            # so we need to convert the coordinates to Equinox of the date
+            eod = SkyCoord(ra, dec, unit=(u.deg), frame='icrs')
+            j2k = eod.transform_to(FK5(equinox='J2024'))
+
+            radec[0].setValue(j2k.ra.deg * 24 / 360)
+            radec[1].setValue(j2k.dec.deg)
 
         except TypeError:
-            print(self.lookFor(target))
+            #  print(self.lookFor(target))
             print("Error: Target not found")
             return False
 
