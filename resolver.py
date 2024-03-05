@@ -171,7 +171,7 @@ class resolv:
                 return ra, dec
 
             case 'Hipparcos':
-                print('Getting coordinates of Hipparcos object ' + obj)
+                print('Getting coordinates of Hipparcos object' + obj)
                 hipID = int(obj[3:])
                 with load.open(hipparcos.URL) as f:
                     df = hipparcos.load_dataframe(f)
@@ -185,7 +185,7 @@ class resolv:
                 return ra, dec
 
             case 'Messier' | 'NGC' | 'IC':
-                print('Getting coordinates of ', objectType + ' object ' + obj)
+                print('Getting coordinates of', objectType + ' object ' + obj)
                 tgt = Messier().getFromRef(obj, type)
                 ra, dec = self.hms2deg(tgt['ra']), self.dms2deg(tgt['dec'])
                 alt, az = self.getAltAz({'ra': ra, 'dec': dec})

@@ -403,7 +403,7 @@ class MyCLI(cmd.Cmd):
         Show the current position.
         Usage: showObs
         """
-        print("Observatoire : ", pos['name'])
+        print("Observatory : ", pos['name'])
         print("Lat, Lon, Elev : ", pos['lat'], pos['lon'], pos['elev'])
 
     # define a function that clears the screen
