@@ -37,6 +37,8 @@ except FileNotFoundError:
 
 pos = {}
 
+productName = cfg.get('UI', 'productName')
+
 # OBS.1 is the default observatory position
 try:
     for key in cfg['OBS.1']:
@@ -51,7 +53,7 @@ except KeyError:
 
 class MyCLI(cmd.Cmd):
     prompt = colored('Scope > ', 'green')
-    intro = 'Welcome to ScopeCLI! Type help or ? to list commands.'
+    intro = 'Welcome to ' + productName + '! Type help or ? to list commands.'
     telescope = None
 
     # define what happens when the cli interface is started
@@ -59,12 +61,12 @@ class MyCLI(cmd.Cmd):
         """
         Initialize the CLI.
         """
-        print("ScopeCLI is starting....")
+        print(productName,"is starting....")
         self.do_connect(self)
         time.sleep(0.5)
         self.do_connectTelescope(self)
         time.sleep(0.5)
-        print("ScopeCLI initialized.")
+        print(productName, "initialized.")
         self.do_clear(self)
         # move cursor to previous line
         print("\033[F\033[F")
@@ -79,7 +81,7 @@ class MyCLI(cmd.Cmd):
         Display the banner.
         Usage: banner
         """
-        cprint('ScopeCLI', 'red', attrs=['bold'])
+        cprint(productName, 'red', attrs=['bold'])
         cprint(bannerText, bannerColor)
         cprint('Made with ❤️ by Weetos', 'blue')
 
@@ -234,6 +236,12 @@ class MyCLI(cmd.Cmd):
         fCoords = coords(currentCoords[0], currentCoords[1])
         print("Scope Current Position :", fCoords.ra_hms, fCoords.dec_dms)
 
+    def do_go(self, target):
+        """
+        Go to specified target.
+        Usage: go <target>
+        """
+        self.do_goto(target)
 
     def do_goto(self, target):
         """
