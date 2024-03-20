@@ -49,6 +49,7 @@ Note: The example latitude and longitude used in this code are for London. Repla
 
 # Other resources
 https://lguerriero.opendatasoft.com/
+https://github.com/esa/tetra3 (Platesolving - maybe useful for astrometry)
 
 Messier catalog
 https://lguerriero.opendatasoft.com/api/explore/v2.1/catalog/datasets/catalogue-de-messier/records?select=messier%2Cngc%2Cra%2Cdec&limit=110

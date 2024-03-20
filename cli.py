@@ -210,7 +210,6 @@ class MyCLI(cmd.Cmd):
         if status == "online":
             print("Connected to INDI server ", cfg.get('INDI', 'server'), ":", cfg.get('INDI', 'port'))
 
-
     # define a function that diplays the current position of the telescope
     def do_showCurrentScopePos(self, line):
         """
@@ -315,6 +314,15 @@ class MyCLI(cmd.Cmd):
         self.do_getConnectionStatus(self)
         self.do_showObs(self)
         self.do_showCurrentScopePos(self)
+        self.do_time(self)
+
+    # define a function that displays current date and time
+    def do_time(self, line):
+        """
+        Show the current date and time.
+        Usage: time
+        """
+        print(time.strftime("%c"))
 
     # define a function that shows the current coordinates the telescope is pointing to
     def do_showPos(self, line):
