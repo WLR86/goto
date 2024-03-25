@@ -254,7 +254,7 @@ class MyCLI(cmd.Cmd):
         #  print("Goto", target)
         try:
             ra, dec = self.lookFor(target)
-            c = coords(ra, dec)
+            #  c = coords(ra, dec)
             #  print(c.getCoordsString())
 
             telescope_connect = self.telescope.getSwitch("CONNECTION")
@@ -273,7 +273,8 @@ class MyCLI(cmd.Cmd):
                 radec = self.telescope.getNumber("EQUATORIAL_EOD_COORD")
 
             # EQUATORIAL_EOD_COORD is not J2000
-            # and EQUATORIAL_COORD (J2000) is not supported according to the INDI documentation
+            # and EQUATORIAL_COORD (J2000) is not supported according to
+            # the INDI documentation
             # so we need to convert the coordinates to Equinox of the date
             eod = SkyCoord(ra, dec, unit=(u.deg), frame='icrs')
             j2k = eod.transform_to(FK5(equinox='J2024'))
@@ -295,6 +296,7 @@ class MyCLI(cmd.Cmd):
                 # set the cursor position at the end of the previous line
                 print("\033[F\033[F")
                 time.sleep(0.5)
+            # Beep so the user knows that the slew is complete
             print("\a")
             print("\033[F\033[F")
             # clear the current line

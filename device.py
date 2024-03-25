@@ -204,4 +204,3 @@ class Device:
             return True
         except:
             return False
-
