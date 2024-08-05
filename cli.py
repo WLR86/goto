@@ -83,7 +83,7 @@ class MyCLI(cmd.Cmd):
         """
         cprint(productName, 'red', attrs=['bold'])
         cprint(bannerText, bannerColor)
-        cprint('Made with ❤️ by Weetos', 'blue')
+        cprint('Made with ❤️  by Weetos', 'blue')
 
     def do_g(self, target):
         """
